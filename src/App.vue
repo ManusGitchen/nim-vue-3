@@ -1,14 +1,15 @@
 <template>
   <header>Nimm Spiel von Manuela</header>
    <main>
-    <Field :sticks="stickArray" />
+    <Field />
     <Settings />
   </main>
 </template>
 
 <script>
-import Field from "./components/Field.vue";
-import Settings from "./components/Settings.vue";
+import Field from "./components/Field.vue"
+import Settings from "./components/Settings.vue"
+
 
 export default {
   name: "App",
@@ -16,21 +17,7 @@ export default {
     Field,
     Settings
   },
-  computed: {
-   
-    stickArray(){
-      const maxCount = this.$store.getters.getNumbersOfSticks
-      let count = 1;
-      let sticks = [];
-      while(this.maxCount >= 0){
-        sticks.push(count);
-        maxCount = maxCount - count;
-        count = count + 2;
-        console.log(sticks)
-      }
-      return sticks
-    }
-  }
+  
 };
 </script>
 

@@ -1,34 +1,50 @@
-<script setup>
-import Stick from "./Stick.vue";
-</script>
-
 <template>
     <div class="field">
-        <div class="row " v-for="index in sticks" :key="index">
-            <Stick v-for="index in index" :key="index" />
+        <div class="row " v-for="(sticks, index) in stickArray" :key="index">
+            <Stick v-for="(stick) in sticks" :key="stick" v-on:click="selectStick(sticks, index)"/>
         </div>
-        <!-- <div class="row" v-for="index in 3" :key="index">
-        <Stick v-for="index in 13" :key="index" />
-        </div> -->
     </div>
 </template>
 
 <script>
+import Stick from "./Stick.vue";
 export default {
-    props:{
-        sticks: {
-            type: Array,
-            default: () => []
+    components: {Stick},
+    // data(){
+    //     return{
+    //         selectedStickLine: null
+    //     }
+    // },
+    computed: {
+        stickArray(){   
+            this.$store.commit('setArrayOfSticks')   
+            return this.$store.state.arrayOfSticks
+        }
+    },
+    methods: {
+        selectStick(stickLine, index){
+            const selectedStickLine = this.$store.state.selectedStickLine
+            if(this.$store.state.startedGame && this.$store.state.activePlayer) {
+                if(selectedStickLine===null||selectedStickLine === index) {
+                    const update = {'stickLine': stickLine, 'index':index, 'number':1}
+                    this.$store.commit('updateSelectedStickLine',index)
+                    this.$store.commit('updateArrayOfSticks', update)
+                    this.$store.commit('updateMove')
+                    this.$store.dispatch('checkWinCondition')
+                }
+                else {
+                    console.log('Nur Sticks aus einer Reihe!')
+                }
+            }
+            else {
+                if(!this.$store.state.startedGame){
+                    console.log('Spiel starten')
+                }else{
+                    console.log('Du bist nicht dran')
+                }
+            }
         }
     }
-    // computed: {
-    //     sticks() {
-    //         const maxSticks = 13;
-    //         let count = 1;
-
-    //     }
-    // }
-    
 }
 </script>
 
