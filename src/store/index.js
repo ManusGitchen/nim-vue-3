@@ -4,11 +4,16 @@ export default createStore({
   state: {
     numberOfSticks: 13,
     arrayOfSticks: [],
-    maxAllowedMoves: 3,
+    bostonArrayOfSticks: [],
+    binaryMatrix: [],
     startedGame: false,
     activePlayer: true,
+    selectedStickLine: null,
+    moveIndex: -1,
     moveCount: 1,
-    selectedStickLine: null
+    degree: 0,
+    squereMatrix: [],
+    // xorArray: []
   },
   getters: {
   },
@@ -21,15 +26,26 @@ export default createStore({
         maxSticks = maxSticks - count;
         count = count + 2;
       }
+      state.bostonArrayOfSticks = state.arrayOfSticks
+      // console.log('INITAL',state.bostonArrayOfSticks)
     },
     updateArrayOfSticks(state, update){
-      // let numberOfSticks = 1
-      // update.number !== undefined ? numberOfSticks = update.number : numberOfSticks = 1
       if(state.moveCount < 4) {
         state.arrayOfSticks[update.index] = update.stickLine - update.number
       }else {
         console.log('DU BIST NICHT MEHR DRAN')
       }
+    },
+    changeArrayOfSticks(state, array){
+      state.arrayOfSticks = array
+    },
+    updateArrayOfSticksBoston(state){
+      this.commit('rotateMatrix', {deg: 270})
+      let stickArray = []
+      state.squereMatrix.forEach(item => stickArray.push(parseInt(item.join(""),2)))
+      state.bostonArrayOfSticks = stickArray
+      state.arrayOfSticks = state.bostonArrayOfSticks
+
     },
     gameState(state, status){
       state.startedGame = status
@@ -37,25 +53,63 @@ export default createStore({
     updateSelectedStickLine(state, stickLine){
       state.selectedStickLine = stickLine
     },
-    updateMove(state){
-        state.moveCount++ 
+    updateMove(state, moves){
+      console.log(moves)
+      moves !== undefined ? state.moveCount += moves : state.moveCount++ 
     },
     resetMoveCount(state){
       state.moveCount = 1
     },
     switchPlayer(state) {
+      state.moveIndex = -1
       state.activePlayer = !state.activePlayer
-    }
+    },
+    setBinaryMatrix(state) {
+      const binaryMatrix = []
+      state.bostonArrayOfSticks.forEach(stick => {
+        binaryMatrix.push((stick >>> 0).toString(2))
+      })
+      state.binaryMatrix = binaryMatrix
+    },
+    setSquereMatrix(state){
+      let array = []
+      let cache = []
+      state.binaryMatrix.forEach(item => array.push(item.split("")))
+      
+      array.forEach(item => {
+        item = item.map(str => {
+          return Number(str);
+        })
+        while(item.length<array.length){
+          item = [0].concat(item)
+        }
+        cache.push(item)
+      })
+      state.squereMatrix = cache
+      console.log('SQUERE',state.squereMatrix)
+    },
+    rotateMatrix(state, {deg}){
+      let squereMatrix = state.squereMatrix      
+      while(state.degree !== deg) {
+        squereMatrix = squereMatrix.map((row, i) =>
+        row.map((val, j) => squereMatrix[squereMatrix.length - 1 - j][i])
+        )
+        state.degree += 90
+        state.squereMatrix = squereMatrix
+        console.log(state.degree,state.squereMatrix)
+      }
+      state.degree = 0
+
+    },
   },
+
+
   actions: {
     skipMove({state}){
       this.commit('resetMoveCount')
-      state.arrayOfSticks.some(stick => stick !== 0) ? this.commit('switchPlayer') : console.log('VERLOREN')
-      // if(this.dispatch('checkWinCondition')){
-      //   // this.dispatch('checkWinCondition')
-      // }else{
-      //   console.log('VERLOREN')
-      // }
+      state.arrayOfSticks.some(stick => stick !== 0) 
+        ? this.commit('switchPlayer') 
+        : console.log('VERLOREN')
     },
     runComputer({state}){
       const numberOfSticks = Math.floor(Math.random()*2)+1
@@ -85,7 +139,48 @@ export default createStore({
         this.commit('switchPlayer')
         console.log('Gewonnen hat: ' + state.activePlayer)
       }
-    }
+    },
+    bostonSetup(){
+      this.commit('setBinaryMatrix')
+      this.commit('setSquereMatrix')
+    },
+    bostonStickSelection({state}, {column, pos}){
+      let selectedColumn = column
+      if(state.moveIndex === -1) {
+        state.moveIndex = selectedColumn.findIndex(item => item > 0)
+      }
+      selectedColumn[state.moveIndex] = 0
+      state.squereMatrix[state.squereMatrix.length-pos] = selectedColumn
+    },    
+    bostonMove({state}) {
+      this.commit('rotateMatrix', {deg: 90})
+      const oneColumn = state.squereMatrix[state.squereMatrix.length-1]
+      const twoColumn = state.squereMatrix[state.squereMatrix.length-2]
+
+      if(state.moveCount <=2 && (twoColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
+        this.dispatch('bostonStickSelection', {column: twoColumn, pos: 2})
+        this.commit('updateMove', 2)
+        if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[state.moveIndex]===1){
+          this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
+          this.commit('updateMove', 1)
+        }else{
+          this.commit('updateArrayOfSticksBoston')
+          this.commit('resetMoveCount')
+          this.commit('switchPlayer')
+          this.dispatch('checkWinCondition')
+        }
+      }else if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
+        this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
+        this.commit('updateArrayOfSticksBoston')
+        this.commit('resetMoveCount')
+        this.commit('switchPlayer')
+        this.dispatch('checkWinCondition')
+      }
+      else {
+        this.dispatch('runComputer')
+      }
+  
+    },
   },
   modules: {},
 });

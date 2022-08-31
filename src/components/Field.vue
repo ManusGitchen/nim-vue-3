@@ -1,6 +1,7 @@
 <template>
     <div class="field">
         <div class="row " v-for="(sticks, index) in stickArray" :key="index">
+            {{index}}
             <Stick v-for="(stick) in sticks" :key="stick" v-on:click="selectStick(sticks, index)"/>
         </div>
     </div>
@@ -15,9 +16,11 @@ export default {
     //         selectedStickLine: null
     //     }
     // },
+    created(){
+        this.$store.commit('setArrayOfSticks')   
+    },
     computed: {
         stickArray(){   
-            this.$store.commit('setArrayOfSticks')   
             return this.$store.state.arrayOfSticks
         }
     },
@@ -29,7 +32,7 @@ export default {
                     const update = {'stickLine': stickLine, 'index':index, 'number':1}
                     this.$store.commit('updateSelectedStickLine',index)
                     this.$store.commit('updateArrayOfSticks', update)
-                    this.$store.commit('updateMove')
+                    this.$store.commit('updateMove', 1)
                     this.$store.dispatch('checkWinCondition')
                 }
                 else {
