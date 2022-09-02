@@ -9,26 +9,26 @@
 
 <script>
 import Stick from "./Stick.vue";
+import { mapState } from 'vuex'
+
 export default {
     components: {Stick},
-    // data(){
-    //     return{
-    //         selectedStickLine: null
-    //     }
-    // },
+    
     created(){
         this.$store.commit('setArrayOfSticks')   
     },
     computed: {
-        stickArray(){   
-            return this.$store.state.arrayOfSticks
-        }
+        ...mapState({
+            startedGame: (state) => state.startedGame,
+            activePlayer: (state) => state.activePlayer,
+            selectedStickLine: (state) => state.selectedStickLine,
+            stickArray: (state) => state.arrayOfSticks
+        }),
     },
     methods: {
         selectStick(stickLine, index){
-            const selectedStickLine = this.$store.state.selectedStickLine
-            if(this.$store.state.startedGame && this.$store.state.activePlayer) {
-                if(selectedStickLine===null||selectedStickLine === index) {
+            if(this.startedGame && this.activePlayer) {
+                if(this.selectedStickLine === null || this.selectedStickLine === index) {
                     const update = {'stickLine': stickLine, 'index':index, 'number':1}
                     this.$store.commit('updateSelectedStickLine',index)
                     this.$store.commit('updateArrayOfSticks', update)
@@ -40,7 +40,7 @@ export default {
                 }
             }
             else {
-                if(!this.$store.state.startedGame){
+                if(!this.startedGame){
                     console.log('Spiel starten')
                 }else{
                     console.log('Du bist nicht dran')
@@ -52,9 +52,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.row{
+  .field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    & .row{
     display: flex;
     flex-direction: row;
     justify-content: center;
-}
+    }
+  }
 </style>

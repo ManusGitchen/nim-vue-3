@@ -13,7 +13,7 @@ export default createStore({
     moveCount: 1,
     degree: 0,
     squereMatrix: [],
-    // xorArray: []
+    gameHint: ''
   },
   getters: {
   },
@@ -21,13 +21,13 @@ export default createStore({
     setArrayOfSticks(state){
       let maxSticks = state.numberOfSticks
       let count = 1
+      state.arrayOfSticks = []
       while(maxSticks > 0){
         state.arrayOfSticks.push(count);
         maxSticks = maxSticks - count;
         count = count + 2;
       }
       state.bostonArrayOfSticks = state.arrayOfSticks
-      // console.log('INITAL',state.bostonArrayOfSticks)
     },
     updateArrayOfSticks(state, update){
       if(state.moveCount < 4) {
@@ -49,12 +49,15 @@ export default createStore({
     },
     gameState(state, status){
       state.startedGame = status
+      if(status === true) {
+        state.activePlayer = true
+      }
+      state.gameHint = 'Ziehe deine Sticks'
     },
     updateSelectedStickLine(state, stickLine){
       state.selectedStickLine = stickLine
     },
     updateMove(state, moves){
-      console.log(moves)
       moves !== undefined ? state.moveCount += moves : state.moveCount++ 
     },
     resetMoveCount(state){
@@ -86,7 +89,6 @@ export default createStore({
         cache.push(item)
       })
       state.squereMatrix = cache
-      console.log('SQUERE',state.squereMatrix)
     },
     rotateMatrix(state, {deg}){
       let squereMatrix = state.squereMatrix      
@@ -96,7 +98,6 @@ export default createStore({
         )
         state.degree += 90
         state.squereMatrix = squereMatrix
-        console.log(state.degree,state.squereMatrix)
       }
       state.degree = 0
 
@@ -109,7 +110,7 @@ export default createStore({
       this.commit('resetMoveCount')
       state.arrayOfSticks.some(stick => stick !== 0) 
         ? this.commit('switchPlayer') 
-        : console.log('VERLOREN')
+        : state.gameHint = 'Du hast verloren'
     },
     runComputer({state}){
       const numberOfSticks = Math.floor(Math.random()*2)+1
@@ -137,7 +138,9 @@ export default createStore({
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
       if(filteredArray.length === 1 && !filteredArray.some(element => element > 1)) {
         this.commit('switchPlayer')
-        console.log('Gewonnen hat: ' + state.activePlayer)
+        this.commit('gameState', false)
+        state.gameHint = 'Du hast gewonnen'
+        this.commit('setArrayOfSticks')
       }
     },
     bostonSetup(){
@@ -152,29 +155,29 @@ export default createStore({
       selectedColumn[state.moveIndex] = 0
       state.squereMatrix[state.squereMatrix.length-pos] = selectedColumn
     },    
+    bostonExecuteMove(){
+      this.commit('updateArrayOfSticksBoston')
+      this.commit('resetMoveCount')
+      this.commit('switchPlayer')
+      this.dispatch('checkWinCondition')
+    },
     bostonMove({state}) {
       this.commit('rotateMatrix', {deg: 90})
       const oneColumn = state.squereMatrix[state.squereMatrix.length-1]
       const twoColumn = state.squereMatrix[state.squereMatrix.length-2]
-
+      
       if(state.moveCount <=2 && (twoColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
         this.dispatch('bostonStickSelection', {column: twoColumn, pos: 2})
         this.commit('updateMove', 2)
         if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[state.moveIndex]===1){
           this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
-          this.commit('updateMove', 1)
+          this.dispatch('bostonExecuteMove')
         }else{
-          this.commit('updateArrayOfSticksBoston')
-          this.commit('resetMoveCount')
-          this.commit('switchPlayer')
-          this.dispatch('checkWinCondition')
+          this.dispatch('bostonExecuteMove')
         }
       }else if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
         this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
-        this.commit('updateArrayOfSticksBoston')
-        this.commit('resetMoveCount')
-        this.commit('switchPlayer')
-        this.dispatch('checkWinCondition')
+        this.dispatch('bostonExecuteMove')
       }
       else {
         this.dispatch('runComputer')

@@ -21,8 +21,8 @@ export default {
 
     &-head {
         border-radius: 50%;
-        background: red;
-        border-color: red;
+        background: var(--dark-red);
+        border-color: var(--dark-red);
         height: .5rem;
         width: .5rem;
     }
@@ -30,8 +30,8 @@ export default {
     &-body {
         height: 3rem;
         width: .5rem;
-        background: lightgrey;
-        border-color: grey;
+        background: var(--wood);
+        border-color: var(--wood-dark);
     }
 }
 </style>
