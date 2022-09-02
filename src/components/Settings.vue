@@ -78,9 +78,13 @@ export default {
 <style lang="scss" scoped>
   .game-settings {
     &--desc {
-      text-align: left;
+      text-align: center;
+      @media screen and (min-width: 992px) {
+        text-align: left;
+      }
       font-size: 65%;
       color: #aaa;
+      padding: 0 1rem;
     }
     &--hints {
       padding: 1.5rem;

@@ -14,7 +14,7 @@ import { mapState } from 'vuex'
 export default {
     components: {Stick},
     
-    created(){
+    mounted(){
         this.$store.commit('setArrayOfSticks')   
     },
     computed: {
