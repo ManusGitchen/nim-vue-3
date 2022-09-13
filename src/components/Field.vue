@@ -1,6 +1,6 @@
 <template>
     <div class="field">
-        <div class="row " v-for="(sticks, index) in stickArray" :key="index">
+        <div class="stick-row" :class="'row-'+index " v-for="(sticks, index) in stickArray" :key="index">
             {{index}}
             <Stick v-for="(stick) in sticks" :key="stick" v-on:click="selectStick(sticks, index)"/>
         </div>
@@ -36,14 +36,14 @@ export default {
                     this.$store.dispatch('checkWinCondition')
                 }
                 else {
-                    console.log('Nur Sticks aus einer Reihe!')
+                    this.$store.commit('setHint', 'Nur Sticks aus einer Reihe!')
                 }
             }
             else {
                 if(!this.startedGame){
-                    console.log('Spiel starten')
+                    this.$store.commit('setHint', 'Spiel starten')
                 }else{
-                    console.log('Du bist nicht dran')
+                    this.$store.commit('setHint', 'Du bist nicht dran')
                 }
             }
         }
@@ -57,7 +57,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     
-    & .row{
+    & .stick-row{
     display: flex;
     flex-direction: row;
     justify-content: center;

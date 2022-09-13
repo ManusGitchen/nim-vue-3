@@ -4,7 +4,7 @@
       <h4>Wähle deinen Gegner</h4>
       Zufall Computer
       <label class="switch">
-        <input type="checkbox" id="checkbox" v-model="checked" />
+        <input type="checkbox" id="checkbox" v-model="boston" />
         <span class="slider round"></span>
       </label>
       Boston Computer
@@ -18,7 +18,7 @@
     </div>
     <div class="game-settings--control">
       <div class="game-settings--control__start" v-show="!startedGame">
-        <button class="btn-default" @click="startGame">Spiel starten</button>
+        <button class="btn-default btn-start" @click="startGame">Spiel starten</button>
         <div class="game-settings--desc">
           <p>Spiel starten. Du bist als erstes am Zug und darfst 1-3 Sticks aus der selben Reihe auswählen.</p>
         </div>
@@ -38,7 +38,7 @@ import { mapState } from 'vuex'
 export default {
     data(){
         return {
-            checked: false,
+            boston: false,
             computersTurn: 1
         }
     },
@@ -52,18 +52,18 @@ export default {
     methods: {
         startGame(){
             this.startedGame
-            ? console.log('Du bist am Zug')
+            ? this.$store.commit('setHint','Du bist am Zug')
             : this.$store.commit('gameState', true)
         },
         skipMove(){
             if(this.moveCount > 1) {
+              this.$store.commit('updateSelectedStickLine',null)
                 this.$store.dispatch('skipMove')
-                this.$store.commit('updateSelectedStickLine',null)
-                this.checked
+                this.boston
                 ? this.bostonStrategy()
                 : this.$store.dispatch('runComputer')
             }else{
-                console.log('Du musst mindest ein Streichholz ziehen')
+              this.$store.commit('setHint', 'Du musst mindest ein Streichholz ziehen')
             }
         },
         bostonStrategy(){
