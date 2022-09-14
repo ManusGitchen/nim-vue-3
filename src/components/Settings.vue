@@ -79,9 +79,6 @@ export default {
   .game-settings {
     &--desc {
       text-align: center;
-      @media screen and (min-width: 992px) {
-        text-align: left;
-      }
       font-size: 65%;
       color: #aaa;
       padding: 0 1rem;

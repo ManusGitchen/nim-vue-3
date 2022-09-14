@@ -1,8 +1,6 @@
 it('find first fit row with boston strategy', () => {
   let rotatedSquereMatrix = [[0,0,0,0],[1,1,0,0],[1,0,1,0],[1,1,1,0]]
   let moveIndex = -1
-  let moveCount = 1
-  const arrayOfSticks = [0,3,5,7]
   const oneColumn = rotatedSquereMatrix[rotatedSquereMatrix.length-1]
   const twoColumn = rotatedSquereMatrix[rotatedSquereMatrix.length-2]
   if(twoColumn.reduce((a, b) => a + b, 0)%2 !== 0){
@@ -11,7 +9,6 @@ it('find first fit row with boston strategy', () => {
     }
     twoColumn[moveIndex] = 0
     rotatedSquereMatrix[rotatedSquereMatrix.length-2] = twoColumn
-    moveCount += 2
     if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[moveIndex]===1){
       if(moveIndex === -1) {
         moveIndex = oneColumn.findIndex(item => item > 0)
