@@ -180,7 +180,7 @@ export default createStore({
         const update = {
           'stickLine' : state.arrayOfSticks.find(row => row !== 0),
           'index': state.arrayOfSticks.indexOf(filteredArray[0]),
-          'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-1
+          'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-(state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-1)
         }
         this.commit('updateArrayOfSticks', update)
         // this.commit('switchPlayer')

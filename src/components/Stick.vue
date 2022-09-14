@@ -1,5 +1,5 @@
 <template>
-    <div class="stick">
+    <div class="stick" ref='stick'>
         <div class="stick-head"></div>
         <div class="stick-body"></div>
     </div>

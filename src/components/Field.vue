@@ -1,7 +1,7 @@
 <template>
     <div class="field">
         <div class="stick-row" :class="'row-'+index " v-for="(sticks, index) in stickArray" :key="index">
-            {{index}}
+            <span :ref="'stick-count-'+sticks">{{sticks}}</span>
             <Stick v-for="(stick) in sticks" :key="stick" v-on:click="selectStick(sticks, index)"/>
         </div>
     </div>
