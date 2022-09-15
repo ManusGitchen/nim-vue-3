@@ -1,3 +1,7 @@
+/**
+ * Testet die Berechnung des Zugs nach Boston Strategie 
+ * an einer Beispiel Situation mit definierter Erwartung
+ */
 it('find first fit row with boston strategy', () => {
   let rotatedSquereMatrix = [[0,0,0,0],[1,1,0,0],[1,0,1,0],[1,1,1,0]]
   let moveIndex = -1
@@ -27,6 +31,9 @@ it('find first fit row with boston strategy', () => {
   expect(rotatedSquereMatrix[rotatedSquereMatrix.length-1]).toStrictEqual([0,1,1,0])
 })
 
+/**
+ * Testet nach Boston berechneten Zug an einem Beispiel mit definierter Erwartung
+ */
 it('execute boston move', () => {
   const squereMatrix = [[0,0,0,0],[0,0,1,1],[0,1,0,1],[0,1,1,0]]
   let stickArray = []
@@ -34,6 +41,11 @@ it('execute boston move', () => {
   expect(stickArray).toStrictEqual([0,3,5,6])
 })
   
+/**
+ * Testet die Zugbestimmung des Boston Computers 
+ * in der Ausnahmesituation mit nur noch einer Stickreihe
+ * mit definierter Erwartung
+ */
 it('only one row solution', () => {
   const arrayOfSticks = [0,3,0,0]
   const filteredArray = arrayOfSticks.filter(x => x !== 0)

@@ -1,3 +1,6 @@
+/**
+ * Testet die Zugbestimmung des Zufallscomputers mit defineirter Erwartung
+ */
 it('find first fit row of sticks', () => {
   // numberOfStick is Math.random. To get a testable solution, I use a constant number
   const numberOfSticks = 3

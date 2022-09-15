@@ -1,3 +1,6 @@
+/**
+ * Testet den Spüielaufbau mit definierter Erwartung
+ */
 it('set array of sticks', () => {
   let maxSticks = 13
   let count = 1
@@ -10,6 +13,9 @@ it('set array of sticks', () => {
   expect(arrayOfSticks).toStrictEqual([1,3,5,7]);
 });
 
+/**
+ * Testet die Berechnung der binären Matrix mit definierter Erwartung
+ */
 it('set binary matrix', () => {
   const binaryMatrix = []
   const arrayOfSticks = [1,3,5,7]
@@ -19,6 +25,9 @@ it('set binary matrix', () => {
   expect(binaryMatrix).toStrictEqual(["1","11","101","111"])
 })
 
+/**
+ * Testet die Berechnung der quadratischen Matrix mit definierter Erwartung
+ */
 it('set squere matrix', () => {
   let array = []
   let cache = []
@@ -38,6 +47,9 @@ it('set squere matrix', () => {
   expect(cache).toStrictEqual([[0,0,0,1],[0,0,1,1],[0,1,0,1],[0,1,1,1]])
 })
 
+/**
+ * Testet die Matrixrotation um 90 Grad mit definierter Erwartung
+ */
 it('rotate matrix with 90 degree', () => {
   let squereMatrix = [[0,0,0,1],[0,0,1,1],[0,1,0,1],[0,1,1,1]]
   let degree = 0
@@ -50,6 +62,9 @@ it('rotate matrix with 90 degree', () => {
   expect(squereMatrix).toStrictEqual([[0,0,0,0],[1,1,0,0],[1,0,1,0],[1,1,1,1]])
 })
 
+/**
+ * Testet die Matrixrotation um 270 Grad mit definierter Erwartung
+ */
 it('rotate matrix with 270 degree', () => {
   let squereMatrix = [[0,0,0,1],[0,0,1,1],[0,1,0,1],[0,1,1,1]]
   let degree = 0

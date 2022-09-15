@@ -36,42 +36,47 @@
 <script>
 import { mapState } from 'vuex'
 export default {
-    data(){
-        return {
-            boston: false,
-            computersTurn: 1
-        }
-    },
-    computed: {
-        ...mapState({
-            startedGame: (state) => state.startedGame,
-            moveCount: (state) => state.moveCount,
-            hint: (state) => state.gameHint
-        })
-    },
-    methods: {
-        startGame(){
-            this.startedGame
-            ? this.$store.commit('setHint','Du bist am Zug')
-            : this.$store.commit('gameState', true)
-        },
-        skipMove(){
-            if(this.moveCount > 1) {
-              this.$store.commit('updateSelectedStickLine',null)
-                this.$store.dispatch('skipMove')
-                this.boston
-                ? this.bostonStrategy()
-                : this.$store.dispatch('runComputer')
-            }else{
-              this.$store.commit('setHint', 'Du musst mindest ein Streichholz ziehen')
-            }
-        },
-        bostonStrategy(){
-                this.$store.dispatch('bostonSetup')
-                this.$store.dispatch('bostonMove') 
-        }
+  data(){
+    return {
+      boston: false,
+      computersTurn: 1
     }
-    
+  },
+
+  computed: {
+    ...mapState({
+      startedGame: (state) => state.startedGame,
+      moveCount: (state) => state.moveCount,
+      hint: (state) => state.gameHint
+    })
+  },
+
+  methods: {
+    //Das Spiel muss erst gestartet werden. Erst dann sind Züge möglich.
+    startGame(){
+      this.startedGame
+        ? this.$store.commit('setHint','Du bist am Zug')
+        : this.$store.commit('gameState', true)
+    },
+    //Ein Zug wird beendet, wenn der Spiele seine gewünschte Anzahl Sticks gewählt hat.
+    //Mit dem Beenden des Zugs wird die eingestellte Gegner aktiviert und dessen Zug berechnet.
+    skipMove(){
+      if(this.moveCount > 1) {
+        this.$store.commit('updateSelectedStickLine',null)
+        this.$store.dispatch('skipMove')
+        this.boston
+          ? this.bostonStrategy()
+          : this.$store.dispatch('runComputer')
+      } else {
+        this.$store.commit('setHint', 'Du musst mindest ein Streichholz ziehen')
+      }
+    },
+    //Die Boston Strategie benötigt ein Setup (Berechnung der binären, quadratischen Matrix)
+    bostonStrategy() {
+      this.$store.dispatch('bostonSetup')
+      this.$store.dispatch('bostonMove') 
+    }
+  }  
 }
 </script>
 
@@ -90,5 +95,4 @@ export default {
       margin: 1rem 0;
     }
   }
-
 </style>

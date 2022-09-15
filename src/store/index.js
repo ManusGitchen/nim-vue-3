@@ -15,9 +15,14 @@ export default createStore({
     squereMatrix: [],
     gameHint: ''
   },
-  getters: {
-  },
+
   mutations: {
+
+    /**
+     * Berechnet die zeilenweise Verteilung der Sticks, abhängig von der maximalen Anzahl.
+     * 
+     * @param {*} state 
+     */
     setArrayOfSticks(state){
       let maxSticks = state.numberOfSticks
       let count = 1
@@ -29,6 +34,13 @@ export default createStore({
       }
       state.bostonArrayOfSticks = state.arrayOfSticks
     },
+
+    /**
+     * Prüft, ob noch ein Zug möglich ist.
+     * Aktualisiert das Array der Sticks nach einem Zug.
+     * @param {*} state 
+     * @param {*} update Objekt mit Angaben zum Zug. Welche Zeile und wie viele Sticks
+     */
     updateArrayOfSticks(state, update){
       if(state.moveCount < 4) {
         state.arrayOfSticks[update.index] = update.stickLine - update.number
@@ -36,17 +48,25 @@ export default createStore({
         this.commit('setHint', 'Beende deinen Zug, du hast keine Züge mehr')
       }
     },
-    changeArrayOfSticks(state, array){
-      state.arrayOfSticks = array
-    },
+
+    /**
+     * Die Boston Strategie verwendet ein eigenes, binäres Stick Array, was zurück gerechnet
+     * in dann in das allgemeine Stick Array geschrieben wird.
+     * @param {*} state 
+     */
     updateArrayOfSticksBoston(state){
       this.commit('rotateMatrix', {deg: 270})
       let stickArray = []
       state.squereMatrix.forEach(item => stickArray.push(parseInt(item.join(""),2)))
       state.bostonArrayOfSticks = stickArray
       state.arrayOfSticks = state.bostonArrayOfSticks
-
     },
+
+    /**
+     * Setzt Attribut startedGame auf true, wenn das Spiel beginnt und auf false, wenn der Gewinner feststeht.
+     * @param {*} state 
+     * @param {*} status Boolean
+     */
     gameState(state, status){
       state.startedGame = status
       if(status === true) {
@@ -54,23 +74,56 @@ export default createStore({
         this.commit('setHint', 'Ziehe deine Sticks')
       }
     },
+
+    /**
+     * Setzt eine Nachricht für den Spieler
+     * @param {*} state 
+     * @param {*} hint String
+     */
     setHint(state, hint){
       state.gameHint = hint
     },
+
+    /**
+     * Setzt die gewählte Reihe im ersten Zug der jeweiligen Runde.
+     * @param {*} state 
+     * @param {*} stickLine Number
+     */
     updateSelectedStickLine(state, stickLine){
       state.selectedStickLine = stickLine
     },
+
+    /**
+     * Counter für die Anzahl der Züge.
+     * @param {*} state 
+     * @param {*} moves Number
+     */
     updateMove(state, moves){
       moves !== undefined ? state.moveCount += moves : state.moveCount++ 
     },
+
+    /**
+     * Setzt den Zug Counter zurück
+     * @param {*} state 
+     */
     resetMoveCount(state){
       state.moveCount = 1
     },
+
+    /**
+     * Wechselt zwischen aktivem Spieler (true) und Computergegner (false)
+     * @param {*} state 
+     */
     switchPlayer(state) {
       state.moveIndex = -1
       state.activePlayer = !state.activePlayer
       this.commit('setHint', 'Ziehe deine Sticks')
     },
+
+    /**
+     * Berechnet die binäre Matrix basierend auf dem Stick Array
+     * @param {*} state 
+     */
     setBinaryMatrix(state) {
       const binaryMatrix = []
       state.bostonArrayOfSticks.forEach(stick => {
@@ -78,6 +131,11 @@ export default createStore({
       })
       state.binaryMatrix = binaryMatrix
     },
+
+    /**
+     * Berechnet die binäre, quadratische Matrix
+     * @param {*} state 
+     */
     setSquereMatrix(state){
       let array = []
       let cache = []
@@ -94,6 +152,12 @@ export default createStore({
       })
       state.squereMatrix = cache
     },
+
+    /**
+     * Rotiert die binäre, quadratische Matrix um die übergebene Gradzahl (90/180/270/360)
+     * @param {*} state 
+     * @param {*} deg Number 90/180/270/360
+     */
     rotateMatrix(state, {deg}){
       let squereMatrix = state.squereMatrix      
       while(state.degree !== deg) {
@@ -104,18 +168,28 @@ export default createStore({
         state.squereMatrix = squereMatrix
       }
       state.degree = 0
-
     },
   },
 
 
   actions: {
+    /**
+     * Beendet einen Zug, in dem der Zug Counter zurückgesetzt und der Spieler gewechselt wird, 
+     * sofern es noch mögliche Züge gibt
+     * @param {*} state 
+     */
     skipMove({state}){
       this.commit('resetMoveCount')
       state.arrayOfSticks.some(stick => stick !== 0) 
         ? this.commit('switchPlayer') 
         : this.commit('setHint', 'Du hast verloren')
     },
+
+    /**
+     * Der Simple Computer Zug
+     * Berechnet den ersten möglichen Zug mit einer zufällig Anzahl zwischen 1 und 3 Sticks 
+     * @param {*} state 
+     */
     runComputer({state}){
       const numberOfSticks = Math.floor(Math.random()*2)+1
       if(state.arrayOfSticks.some(row => row === numberOfSticks)){
@@ -135,42 +209,17 @@ export default createStore({
         }
         this.commit('updateArrayOfSticks', update)
       }
-      this.commit('switchPlayer')
       this.dispatch('checkWinCondition')
     },
-    checkWinCondition({state}){
-      const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
-      if(filteredArray.length <= 1 && !filteredArray.some(element => element > 1)) {
-        // this.commit('switchPlayer')
-        this.commit('gameState', false)
-        state.activePlayer
-        ? state.gameHint = 'Du hast gewonnen'
-        : state.gameHint = 'Der Computer hat gewonnen'
-        this.commit('setArrayOfSticks')
-        this.commit('resetMoveCount')
-        this.commit('updateSelectedStickLine', null)
-      }else if(!state.activePlayer){
-        this.commit('switchPlayer')
-      }
-    },
-    bostonSetup(){
-      this.commit('setBinaryMatrix')
-      this.commit('setSquereMatrix')
-    },
-    bostonStickSelection({state}, {column, pos}){
-      let selectedColumn = column
-      if(state.moveIndex === -1) {
-        state.moveIndex = selectedColumn.findIndex(item => item > 0)
-      }
-      selectedColumn[state.moveIndex] = 0
-      state.squereMatrix[state.squereMatrix.length-pos] = selectedColumn
-    },    
-    bostonExecuteMove(){
-      this.commit('updateArrayOfSticksBoston')
-      // this.dispatch('skipMove')
-      this.dispatch('checkWinCondition')
-      this.commit('resetMoveCount')
-    },
+
+    /**
+     * Berechnet die zu ziehenden Sticks nach der Boston Strategie 
+     * Ungerade Spaltensummen in der binären Matrix zeigen passende Züge an
+     * Gezogen wird nur aus der 2er oder 1er Reihe (maximale Anzahl 3)
+     * Falls es keine ungeraden Spaltensummen gibt, der Computer sich also in einer Verlustsituation befindet,
+     * zieht der einfache Zufallscomputer
+     * @param {*} state 
+     */
     bostonMove({state}) {
       this.commit('rotateMatrix', {deg: 90})
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
@@ -183,27 +232,74 @@ export default createStore({
           'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-(state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-1)
         }
         this.commit('updateArrayOfSticks', update)
-        // this.commit('switchPlayer')
         this.dispatch('checkWinCondition')
-      }else{
-      if(state.moveCount <=2 && (twoColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
-        this.dispatch('bostonStickSelection', {column: twoColumn, pos: 2})
-        this.commit('updateMove', 2)
-        if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[state.moveIndex]===1){
+      } else {
+        if(state.moveCount <=2 && (twoColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
+          this.dispatch('bostonStickSelection', {column: twoColumn, pos: 2})
+          this.commit('updateMove', 2)
+          if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[state.moveIndex]===1){
+            this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
+            this.dispatch('bostonExecuteMove')
+          }else{
+            this.dispatch('bostonExecuteMove')
+          }
+        }else if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
           this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
           this.dispatch('bostonExecuteMove')
-        }else{
-          this.dispatch('bostonExecuteMove')
+        } else {
+          this.dispatch('runComputer')
         }
-      }else if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
-        this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
-        this.dispatch('bostonExecuteMove')
       }
-      else {
-        this.dispatch('runComputer')
+    },
+    
+    /**
+     * Bereitet den Zug des Boston Computers vor
+     */
+    bostonSetup(){
+      this.commit('setBinaryMatrix')
+      this.commit('setSquereMatrix')
+    },
+
+    /**
+     * Wählt den berechneten Stick des Boston Computers aus
+     * @param {*} state 
+     * @param {*} Object Spalte und Position 
+     */
+    bostonStickSelection({state}, {column, pos}){
+      let selectedColumn = column
+      if(state.moveIndex === -1) {
+        state.moveIndex = selectedColumn.findIndex(item => item > 0)
+      }
+      selectedColumn[state.moveIndex] = 0
+      state.squereMatrix[state.squereMatrix.length-pos] = selectedColumn
+    },   
+    
+    /**
+     * Führt den Zug des Boston Computers aus
+     */
+    bostonExecuteMove(){
+      this.commit('updateArrayOfSticksBoston')
+      this.dispatch('checkWinCondition')
+      this.commit('resetMoveCount')
+    },
+
+    /**
+     * Prüft die Gewinn/Verlust Situation nach jedem Zug
+     * @param {*} state 
+     */
+    checkWinCondition({state}){
+      const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
+      if(filteredArray.length <= 1 && !filteredArray.some(element => element > 1)) {
+        this.commit('gameState', false)
+        state.activePlayer
+        ? state.gameHint = 'Du hast gewonnen'
+        : state.gameHint = 'Der Computer hat gewonnen'
+        this.commit('setArrayOfSticks')
+        this.commit('resetMoveCount')
+        this.commit('updateSelectedStickLine', null)
+      }else if(!state.activePlayer){
+        this.commit('switchPlayer')
       }
     }
-    },
-  },
-  modules: {},
+  }
 });
