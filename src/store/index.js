@@ -178,11 +178,11 @@ export default createStore({
      * sofern es noch mögliche Züge gibt
      * @param {*} state 
      */
-    skipMove({ state }) {
-      this.commit('resetMoveCount')
+    skipMove({ state,commit }) {
+      commit('resetMoveCount')
       state.arrayOfSticks.some(stick => stick !== 0)
-        ? this.commit('switchPlayer')
-        : this.commit('setHint', 'Du hast verloren')
+        ? commit('switchPlayer')
+        : commit('setHint', 'Du hast verloren')
     },
     /** Der zug des Spielers wird ausgeführt. */
     playerSelectStick({ commit, dispatch }, updateObj) {
@@ -197,7 +197,7 @@ export default createStore({
      * Berechnet den ersten möglichen Zug mit einer zufällig Anzahl zwischen 1 und 3 Sticks 
      * @param {*} state 
      */
-    runComputer({ state }) {
+    runComputer({ state,commit,dispatch }) {
       const numberOfSticks = Math.floor(Math.random() * 2) + 1
       if (state.arrayOfSticks.some(row => row === numberOfSticks)) {
         const firstFitRow = state.arrayOfSticks.find(row => row >= numberOfSticks)
@@ -206,7 +206,7 @@ export default createStore({
           'index': state.arrayOfSticks.indexOf(firstFitRow),
           'number': numberOfSticks
         }
-        this.commit('updateArrayOfSticks', update)
+        commit('updateArrayOfSticks', update)
       } else {
         const firstFitRow = state.arrayOfSticks.find(row => row >= 1)
         const update = {
@@ -214,9 +214,9 @@ export default createStore({
           'index': state.arrayOfSticks.indexOf(firstFitRow),
           'number': 1
         }
-        this.commit('updateArrayOfSticks', update)
+        commit('updateArrayOfSticks', update)
       }
-      this.dispatch('checkWinCondition')
+      dispatch('checkWinCondition')
     },
 
     /**
@@ -227,8 +227,8 @@ export default createStore({
      * zieht der einfache Zufallscomputer
      * @param {*} state 
      */
-    bostonMove({ state }) {
-      this.commit('rotateMatrix', { deg: 90 })
+    bostonMove({ state,commit,dispatch }) {
+      commit('rotateMatrix', { deg: 90 })
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
       const oneColumn = state.squereMatrix[state.squereMatrix.length - 1]
       const twoColumn = state.squereMatrix[state.squereMatrix.length - 2]
@@ -238,23 +238,23 @@ export default createStore({
           'index': state.arrayOfSticks.indexOf(filteredArray[0]),
           'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])] - (state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])] - 1)
         }
-        this.commit('updateArrayOfSticks', update)
-        this.dispatch('checkWinCondition')
+        commit('updateArrayOfSticks', update)
+        dispatch('checkWinCondition')
       } else {
         if (state.moveCount <= 2 && (twoColumn.reduce((a, b) => a + b, 0) % 2 !== 0)) {
-          this.dispatch('bostonStickSelection', { column: twoColumn, pos: 2 })
-          this.commit('updateMove', 2)
+          dispatch('bostonStickSelection', { column: twoColumn, pos: 2 })
+          commit('updateMove', 2)
           if ((oneColumn.reduce((a, b) => a + b, 0) % 2 !== 0) && oneColumn[state.moveIndex] === 1) {
-            this.dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
-            this.dispatch('bostonExecuteMove')
+            dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
+            dispatch('bostonExecuteMove')
           } else {
-            this.dispatch('bostonExecuteMove')
+            dispatch('bostonExecuteMove')
           }
         } else if ((oneColumn.reduce((a, b) => a + b, 0) % 2 !== 0)) {
-          this.dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
-          this.dispatch('bostonExecuteMove')
+          dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
+          dispatch('bostonExecuteMove')
         } else {
-          this.dispatch('runComputer')
+          dispatch('runComputer')
         }
       }
     },
@@ -262,9 +262,9 @@ export default createStore({
     /**
      * Bereitet den Zug des Boston Computers vor
      */
-    bostonSetup() {
-      this.commit('setBinaryMatrix')
-      this.commit('setSquereMatrix')
+    bostonSetup({commit}) {
+      commit('setBinaryMatrix')
+      commit('setSquereMatrix')
     },
 
     /**
@@ -284,28 +284,28 @@ export default createStore({
     /**
      * Führt den Zug des Boston Computers aus
      */
-    bostonExecuteMove() {
-      this.commit('updateArrayOfSticksBoston')
-      this.dispatch('checkWinCondition')
-      this.commit('resetMoveCount')
+    bostonExecuteMove({commit,dispatch}) {
+      commit('updateArrayOfSticksBoston')
+      dispatch('checkWinCondition')
+      commit('resetMoveCount')
     },
 
     /**
      * Prüft die Gewinn/Verlust Situation nach jedem Zug
      * @param {*} state 
      */
-    checkWinCondition({ state }) {
+    checkWinCondition({ state, commit }) {
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
       if (filteredArray.length <= 1 && !filteredArray.some(element => element > 1)) {
-        this.commit('gameState', false)
+        commit('gameState', false)
         state.activePlayer
           ? state.gameHint = 'Du hast gewonnen'
           : state.gameHint = 'Der Computer hat gewonnen'
-        this.commit('setArrayOfSticks')
-        this.commit('resetMoveCount')
-        this.commit('updateSelectedStickLine', null)
+        commit('setArrayOfSticks')
+        commit('resetMoveCount')
+        commit('updateSelectedStickLine', null)
       } else if (!state.activePlayer) {
-        this.commit('switchPlayer')
+        commit('switchPlayer')
       }
     }
   }
