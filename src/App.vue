@@ -1,6 +1,6 @@
 <template>
   <header>Nimm Spiel von Manuela</header>
-   <main>
+  <main>
     <Field />
     <Settings />
   </main>
@@ -17,7 +17,7 @@ export default {
     Field,
     Settings
   },
-  
+
 };
 </script>
 

@@ -33,10 +33,7 @@ export default {
       if(this.startedGame && this.activePlayer) {
         if(this.selectedStickLine === null || this.selectedStickLine === index) {
           const update = {'stickLine': stickLine, 'index':index, 'number':1}
-          this.$store.commit('updateSelectedStickLine',index)
-          this.$store.commit('updateArrayOfSticks', update)
-          this.$store.commit('updateMove', 1)
-          this.$store.dispatch('checkWinCondition')
+          this.$store.dispatch('playerSelectStick',update)
         } else {
           this.$store.commit('setHint', 'Nur Sticks aus einer Reihe!')
         }

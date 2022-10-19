@@ -23,11 +23,11 @@ export default createStore({
      * 
      * @param {*} state 
      */
-    setArrayOfSticks(state){
+    setArrayOfSticks(state) {
       let maxSticks = state.numberOfSticks
       let count = 1
       state.arrayOfSticks = []
-      while(maxSticks > 0){
+      while (maxSticks > 0) {
         state.arrayOfSticks.push(count);
         maxSticks = maxSticks - count;
         count = count + 2;
@@ -41,10 +41,10 @@ export default createStore({
      * @param {*} state 
      * @param {*} update Objekt mit Angaben zum Zug. Welche Zeile und wie viele Sticks
      */
-    updateArrayOfSticks(state, update){
-      if(state.moveCount < 4) {
+    updateArrayOfSticks(state, update) {
+      if (state.moveCount < 4) {
         state.arrayOfSticks[update.index] = update.stickLine - update.number
-      }else {
+      } else {
         this.commit('setHint', 'Beende deinen Zug, du hast keine Züge mehr')
       }
     },
@@ -54,10 +54,10 @@ export default createStore({
      * in dann in das allgemeine Stick Array geschrieben wird.
      * @param {*} state 
      */
-    updateArrayOfSticksBoston(state){
-      this.commit('rotateMatrix', {deg: 270})
+    updateArrayOfSticksBoston(state) {
+      this.commit('rotateMatrix', { deg: 270 })
       let stickArray = []
-      state.squereMatrix.forEach(item => stickArray.push(parseInt(item.join(""),2)))
+      state.squereMatrix.forEach(item => stickArray.push(parseInt(item.join(""), 2)))
       state.bostonArrayOfSticks = stickArray
       state.arrayOfSticks = state.bostonArrayOfSticks
     },
@@ -67,9 +67,9 @@ export default createStore({
      * @param {*} state 
      * @param {*} status Boolean
      */
-    gameState(state, status){
+    gameState(state, status) {
       state.startedGame = status
-      if(status === true) {
+      if (status === true) {
         state.activePlayer = true
         this.commit('setHint', 'Ziehe deine Sticks')
       }
@@ -80,7 +80,7 @@ export default createStore({
      * @param {*} state 
      * @param {*} hint String
      */
-    setHint(state, hint){
+    setHint(state, hint) {
       state.gameHint = hint
     },
 
@@ -89,7 +89,7 @@ export default createStore({
      * @param {*} state 
      * @param {*} stickLine Number
      */
-    updateSelectedStickLine(state, stickLine){
+    updateSelectedStickLine(state, stickLine) {
       state.selectedStickLine = stickLine
     },
 
@@ -98,15 +98,15 @@ export default createStore({
      * @param {*} state 
      * @param {*} moves Number
      */
-    updateMove(state, moves){
-      moves !== undefined ? state.moveCount += moves : state.moveCount++ 
+    updateMove(state, moves) {
+      moves !== undefined ? state.moveCount += moves : state.moveCount++
     },
 
     /**
      * Setzt den Zug Counter zurück
      * @param {*} state 
      */
-    resetMoveCount(state){
+    resetMoveCount(state) {
       state.moveCount = 1
     },
 
@@ -136,16 +136,16 @@ export default createStore({
      * Berechnet die binäre, quadratische Matrix
      * @param {*} state 
      */
-    setSquereMatrix(state){
+    setSquereMatrix(state) {
       let array = []
       let cache = []
       state.binaryMatrix.forEach(item => array.push(item.split("")))
-      
+
       array.forEach(item => {
         item = item.map(str => {
           return Number(str);
         })
-        while(item.length<array.length){
+        while (item.length < array.length) {
           item = [0].concat(item)
         }
         cache.push(item)
@@ -158,11 +158,11 @@ export default createStore({
      * @param {*} state 
      * @param {*} deg Number 90/180/270/360
      */
-    rotateMatrix(state, {deg}){
-      let squereMatrix = state.squereMatrix      
-      while(state.degree !== deg) {
+    rotateMatrix(state, { deg }) {
+      let squereMatrix = state.squereMatrix
+      while (state.degree !== deg) {
         squereMatrix = squereMatrix.map((row, i) =>
-        row.map((val, j) => squereMatrix[squereMatrix.length - 1 - j][i])
+          row.map((val, j) => squereMatrix[squereMatrix.length - 1 - j][i])
         )
         state.degree += 90
         state.squereMatrix = squereMatrix
@@ -178,11 +178,18 @@ export default createStore({
      * sofern es noch mögliche Züge gibt
      * @param {*} state 
      */
-    skipMove({state}){
+    skipMove({ state }) {
       this.commit('resetMoveCount')
-      state.arrayOfSticks.some(stick => stick !== 0) 
-        ? this.commit('switchPlayer') 
+      state.arrayOfSticks.some(stick => stick !== 0)
+        ? this.commit('switchPlayer')
         : this.commit('setHint', 'Du hast verloren')
+    },
+    /** Der zug des Spielers wird ausgeführt. */
+    playerSelectStick({ commit, dispatch }, updateObj) {
+      commit('updateSelectedStickLine', updateObj.index)
+      commit('updateArrayOfSticks', updateObj)
+      commit('updateMove', 1)
+      dispatch('checkWinCondition')
     },
 
     /**
@@ -190,20 +197,20 @@ export default createStore({
      * Berechnet den ersten möglichen Zug mit einer zufällig Anzahl zwischen 1 und 3 Sticks 
      * @param {*} state 
      */
-    runComputer({state}){
-      const numberOfSticks = Math.floor(Math.random()*2)+1
-      if(state.arrayOfSticks.some(row => row === numberOfSticks)){
+    runComputer({ state }) {
+      const numberOfSticks = Math.floor(Math.random() * 2) + 1
+      if (state.arrayOfSticks.some(row => row === numberOfSticks)) {
         const firstFitRow = state.arrayOfSticks.find(row => row >= numberOfSticks)
         const update = {
-          'stickLine' : firstFitRow,
+          'stickLine': firstFitRow,
           'index': state.arrayOfSticks.indexOf(firstFitRow),
           'number': numberOfSticks
         }
         this.commit('updateArrayOfSticks', update)
-      }else{
+      } else {
         const firstFitRow = state.arrayOfSticks.find(row => row >= 1)
         const update = {
-          'stickLine' : firstFitRow,
+          'stickLine': firstFitRow,
           'index': state.arrayOfSticks.indexOf(firstFitRow),
           'number': 1
         }
@@ -220,42 +227,42 @@ export default createStore({
      * zieht der einfache Zufallscomputer
      * @param {*} state 
      */
-    bostonMove({state}) {
-      this.commit('rotateMatrix', {deg: 90})
+    bostonMove({ state }) {
+      this.commit('rotateMatrix', { deg: 90 })
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
-      const oneColumn = state.squereMatrix[state.squereMatrix.length-1]
-      const twoColumn = state.squereMatrix[state.squereMatrix.length-2]
-      if(filteredArray.length === 1 && !filteredArray.some(element => element > 3)) {
+      const oneColumn = state.squereMatrix[state.squereMatrix.length - 1]
+      const twoColumn = state.squereMatrix[state.squereMatrix.length - 2]
+      if (filteredArray.length === 1 && !filteredArray.some(element => element > 3)) {
         const update = {
-          'stickLine' : state.arrayOfSticks.find(row => row !== 0),
+          'stickLine': state.arrayOfSticks.find(row => row !== 0),
           'index': state.arrayOfSticks.indexOf(filteredArray[0]),
-          'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-(state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])]-1)
+          'number': state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])] - (state.arrayOfSticks[state.arrayOfSticks.indexOf(filteredArray[0])] - 1)
         }
         this.commit('updateArrayOfSticks', update)
         this.dispatch('checkWinCondition')
       } else {
-        if(state.moveCount <=2 && (twoColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
-          this.dispatch('bostonStickSelection', {column: twoColumn, pos: 2})
+        if (state.moveCount <= 2 && (twoColumn.reduce((a, b) => a + b, 0) % 2 !== 0)) {
+          this.dispatch('bostonStickSelection', { column: twoColumn, pos: 2 })
           this.commit('updateMove', 2)
-          if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0) && oneColumn[state.moveIndex]===1){
-            this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
+          if ((oneColumn.reduce((a, b) => a + b, 0) % 2 !== 0) && oneColumn[state.moveIndex] === 1) {
+            this.dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
             this.dispatch('bostonExecuteMove')
-          }else{
+          } else {
             this.dispatch('bostonExecuteMove')
           }
-        }else if((oneColumn.reduce((a, b) => a + b, 0)%2 !== 0)){
-          this.dispatch('bostonStickSelection', {column: oneColumn, pos: 1})
+        } else if ((oneColumn.reduce((a, b) => a + b, 0) % 2 !== 0)) {
+          this.dispatch('bostonStickSelection', { column: oneColumn, pos: 1 })
           this.dispatch('bostonExecuteMove')
         } else {
           this.dispatch('runComputer')
         }
       }
     },
-    
+
     /**
      * Bereitet den Zug des Boston Computers vor
      */
-    bostonSetup(){
+    bostonSetup() {
       this.commit('setBinaryMatrix')
       this.commit('setSquereMatrix')
     },
@@ -265,19 +272,19 @@ export default createStore({
      * @param {*} state 
      * @param {*} Object Spalte und Position 
      */
-    bostonStickSelection({state}, {column, pos}){
+    bostonStickSelection({ state }, { column, pos }) {
       let selectedColumn = column
-      if(state.moveIndex === -1) {
+      if (state.moveIndex === -1) {
         state.moveIndex = selectedColumn.findIndex(item => item > 0)
       }
       selectedColumn[state.moveIndex] = 0
-      state.squereMatrix[state.squereMatrix.length-pos] = selectedColumn
-    },   
-    
+      state.squereMatrix[state.squereMatrix.length - pos] = selectedColumn
+    },
+
     /**
      * Führt den Zug des Boston Computers aus
      */
-    bostonExecuteMove(){
+    bostonExecuteMove() {
       this.commit('updateArrayOfSticksBoston')
       this.dispatch('checkWinCondition')
       this.commit('resetMoveCount')
@@ -287,17 +294,17 @@ export default createStore({
      * Prüft die Gewinn/Verlust Situation nach jedem Zug
      * @param {*} state 
      */
-    checkWinCondition({state}){
+    checkWinCondition({ state }) {
       const filteredArray = state.arrayOfSticks.filter(x => x !== 0)
-      if(filteredArray.length <= 1 && !filteredArray.some(element => element > 1)) {
+      if (filteredArray.length <= 1 && !filteredArray.some(element => element > 1)) {
         this.commit('gameState', false)
         state.activePlayer
-        ? state.gameHint = 'Du hast gewonnen'
-        : state.gameHint = 'Der Computer hat gewonnen'
+          ? state.gameHint = 'Du hast gewonnen'
+          : state.gameHint = 'Der Computer hat gewonnen'
         this.commit('setArrayOfSticks')
         this.commit('resetMoveCount')
         this.commit('updateSelectedStickLine', null)
-      }else if(!state.activePlayer){
+      } else if (!state.activePlayer) {
         this.commit('switchPlayer')
       }
     }
